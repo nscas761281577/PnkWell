@@ -30,4 +30,4 @@ target... : prerequisites...
 - prerequisites——该target所依赖的文件和/或target
 - command——任意的shell命令
 
-**只要prerequisites里面的一个或者多个文件的修改时间比target里面的文件时间要更新，那么comman里面的命令就会执行。**
+**只要`prerequisites`里面的一个或者多个文件的修改时间比`target`里面的文件时间要更新，那么`command`里面的命令就会执行。**
