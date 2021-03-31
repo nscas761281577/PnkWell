@@ -6,7 +6,7 @@
 
 Window的Visual Studio已经替你完成了自动生成Makefile的任务，但是作为一个程序员，熟练使用Makefile是一项非常重要的技能。
 
-## Makefile语法规范
+## Makefile语法规范和核心原则
 
 在`Makefile`文件里面主要写的是让`make`程序的一条条规则。下面是一条规则示例。
 
@@ -28,7 +28,7 @@ target... : prerequisites...
 
 - target——目标文件|执行文件|标签
 - prerequisites——该target所依赖的文件和/或target
-- command——任意的shell命令
+- command——任意的shell命令，注意该行需要以一个`tab`制表符或者四个空格开头
 
 **只要`prerequisites`里面的一个或者多个文件的修改时间比`target`里面的文件时间要更新，那么`command`里面的命令就会执行。(下文统称核心原则)**
 ## 从一个简单的示例入手
@@ -72,4 +72,26 @@ clean :
 
 ## Makefile的工作流程
 
-从上面的例子来说，在`Makefile`所在根目录的控制台或者`shell`中输入`make`命令，`make`程序会在当前目录寻找`Makefile`文件；找到之后寻找其中所写的第一个目标文件，也就是`edit`，若未找到
+从上面的例子来说，在`Makefile`所在根目录的控制台或者`shell`中输入`make`命令，`make`程序会在当前目录寻找`Makefile`文件；找到之后寻找其中所写的第一个目标文件，也就是`edit`，若未找到或者是依赖文件比目标文件`edit`新，则执行后面的生成命令，若依赖文件未找到，则寻找该依赖文件的依赖文件，以此类推，直到所有`edit`的依赖文件生成都找到，执行后面的生成命令。
+
+## 变量
+
+在上述例子中我们可以看到`*.o`字符串被使用了多次，在书写的过程中这会影响工作效率，因此`Makefile`中允许定义变量来简化重复的字符串书写。定义格式如下：
+
+```makefile
+    OBJECTS = main.o kbd.o command.o display.o \
+        insert.o search.o files.o utils.o
+```
+
+那么在在使用过程中我们就可以以${OBJECTS}的方式来使用这个变量了，如下：
+
+```makefile
+    edit : ${OBJECTS}
+        cc -c edit ${OBJECTS}
+```
+
+同理下方的`clean`命令可以写成：
+```makefile
+    clean :
+        rm edit ${OBJECTS}
+```
