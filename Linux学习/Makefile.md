@@ -30,4 +30,46 @@ target... : prerequisites...
 - prerequisites——该target所依赖的文件和/或target
 - command——任意的shell命令
 
-**只要`prerequisites`里面的一个或者多个文件的修改时间比`target`里面的文件时间要更新，那么`command`里面的命令就会执行。**
+**只要`prerequisites`里面的一个或者多个文件的修改时间比`target`里面的文件时间要更新，那么`command`里面的命令就会执行。(下文统称核心原则)**
+## 从一个简单的示例入手
+
+上面我们已经介绍了Makefile的主要原则或者说核心，下面是`Makefile`的详细说明。
+
+```makefile
+edit : main.o kbd.o command.o display.o \
+insert.o search.o files.o utils.o
+    cc -o edit main.o kbd.o command.o display.o \
+        insert.o search.o files.o utils.o
+ 
+main.o : main.c defs.h
+    cc -c main.c
+kbd.o : kbd.c defs.h command.h
+    cc -c kbd.c
+command.o : command.c defs.h command.h
+    cc -c command.c
+display.o : display.c defs.h buffer.h
+    cc -c display.c
+insert.o : insert.c defs.h buffer.h
+    cc -c insert.c
+search.o : search.c defs.h buffer.h
+    cc -c search.c
+files.o : files.c defs.h buffer.h command.h
+    cc -c files.c
+utils.o : utils.c defs.h
+    cc -c utils.c
+clean :
+    rm edit main.o kbd.o command.o display.o \
+        insert.o search.o files.o utils.o
+```
+
+上面代码是一个生成`edit`可执行程序的一段`makefile`代码，目标(`target`)为`edit`可执行文件和各种目标文件(`*.o`),所需要的依赖(`prerequisite`)便是冒号后面的各种文件。其中的反斜杠(`\`)的主要作用是当代码段太长时连接两行代码，便于阅读也有美观的作用。紧接着那一行是生成目标文件的操作系统代码，就和直接在`shell`或者控制台中输入的代码类似。make不会管命令是如何执行的，它只会直接执行命令，相当于直接将代码输入控制台一样。然后`make`按照核心原则比较依赖文件和目标文件的日期，来决定是否执行命令。
+
+注意最后的`clean`不是一个目标文件，它只是一个动作的名字。其冒号后面什么都没有，那么它就不会自动的寻找它的依赖关系，也不会自动执行后面所跟的命令。要执行其命令，就要在`make`命令之后显式的指出这个动作的名字，如
+```shell
+    make clean
+```
+这个功能使得我们可以在`makefile`中定义一些我们自己的操作，而又不会影响`makefile`的正常使用，比如文件的备份、删除或者程序的打包等等，使得我们的效率非常高。
+
+## Makefile的工作流程
+
+从上面的例子来说，在`Makefile`所在根目录的控制台或者`shell`中输入`make`命令，`make`程序会在当前目录寻找`Makefile`文件；找到之后寻找其中所写的第一个目标文件，也就是`edit`，若未找到
