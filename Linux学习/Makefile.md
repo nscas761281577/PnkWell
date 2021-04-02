@@ -13,7 +13,7 @@ Window的Visual Studio已经替你完成了自动生成Makefile的任务，但�
 ```makefile
 main:main.cpp function.cpp function.h
 
-    ${CXX} -c main.cpp function.cpp
+    $(CXX) -c main.cpp function.cpp
 ```
 
 这条规则表示使用g++编译器将`main.cpp`、`function.cpp`编译成同名目标文件`main.o`、`function.o`.
@@ -83,15 +83,52 @@ clean :
         insert.o search.o files.o utils.o
 ```
 
-那么在在使用过程中我们就可以以${OBJECTS}的方式来使用这个变量了，如下：
+那么在在使用过程中我们就可以以`$(OBJECTS)`的方式来使用这个变量了，如下：
 
 ```makefile
-    edit : ${OBJECTS}
-        cc -c edit ${OBJECTS}
+    edit : $(OBJECTS)
+        cc -c edit $(OBJECTS)
 ```
 
 同理下方的`clean`命令可以写成：
 ```makefile
     clean :
-        rm edit ${OBJECTS}
+        rm edit $(OBJECTS)
 ```
+
+若是编程过程中有新加入的`*.o`文件
+
+## 让make程序自动推导
+
+`make`程序非常强大，他可以自动推导依赖或者命令。比如他可以自动推导`main.o`文件后面的依赖文件中加入`main.c`文件，他会自动找到一个`main.c`，并且后面的命令也可以被推出来`cc -c main.c`，因此上述例子中`main.o`的依赖关系可以写成：
+```makefile
+    main.o : defs.h
+```
+
+这被称为`make`的隐晦规则
+
+## 清理文件的规则
+
+上述的例子中的`clean`目标是一个清理文件的目标，更加严谨的写法是：
+
+```makefile
+    .PHONY : clean
+    clean: 
+        -rm edit $(OBJECTS)
+```
+
+其中第一行表示目标`clean`是一个伪目标（`.PHONY`），命令中的短横线'`-`'表示这句命令允许某些文件出现问题，但不要管他，继续进行后面的处理。
+
+## Makefile文件的四大元素
+
+这四大元素分别为：规则、变量、文件指示(包含外部`Makefile`等)、注释。
+
+规则：规则又分为显式规则和隐式规则。显式规则是`makefile`编写人员显式定义的文件依赖关系等；隐式规则是指make程序自动推导的规则。
+
+变量：`makefile`中我们会定义一系列的变量，就像C语言中定义的宏一样，在执行`makefile`时，这些变量都会替换到指定的位置上。
+
+文件指示：用于引入外部`makefile`文件；或者根据制指定情况确定文件中有效的`Makefile`命令，就像C语言中`#if`等宏指令一样；还有就是定义一个多行的命令。
+
+注释：使用#表示注释，若需要使用#，可以使用"\"进行转义。
+
+# 详细写法
